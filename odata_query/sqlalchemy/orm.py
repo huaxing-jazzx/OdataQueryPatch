@@ -6,6 +6,7 @@ from sqlalchemy.orm.decl_api import DeclarativeMeta
 from sqlalchemy.orm.relationships import RelationshipProperty
 from sqlalchemy.sql.expression import BinaryExpression, ClauseElement, ColumnClause, BindParameter, literal
 from sqlalchemy.types import Enum as SQLAEnum
+from sqlalchemy import cast
 
 from odata_query import ast, exceptions as ex, utils, visitor
 
@@ -129,4 +130,5 @@ class AstToSqlAlchemyOrmVisitor(common._CommonVisitors, visitor.NodeVisitor):
                 f"Valid values are: {', '.join(column.type.enums)}"
             )
         
-        return literal(node.value)
+        # Cast the literal value to the enum type
+        return cast(literal(node.value), column.type)
