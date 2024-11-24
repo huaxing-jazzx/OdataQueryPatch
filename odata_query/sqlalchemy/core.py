@@ -1,7 +1,8 @@
 from typing import Type
 
 import sqlalchemy as sa
-from sqlalchemy.sql.expression import BinaryExpression, ClauseElement, ColumnClause
+from sqlalchemy.sql.expression import BinaryExpression, ClauseElement, ColumnClause, BindParameter, literal
+from sqlalchemy.types import Enum as SQLAEnum
 
 from odata_query import ast, exceptions as ex, visitor
 

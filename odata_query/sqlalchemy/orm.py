@@ -4,7 +4,8 @@ from sqlalchemy.inspection import inspect
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.orm.decl_api import DeclarativeMeta
 from sqlalchemy.orm.relationships import RelationshipProperty
-from sqlalchemy.sql.expression import BinaryExpression, ClauseElement, ColumnClause
+from sqlalchemy.sql.expression import BinaryExpression, ClauseElement, ColumnClause, BindParameter, literal
+from sqlalchemy.types import Enum as SQLAEnum
 
 from odata_query import ast, exceptions as ex, utils, visitor
 
