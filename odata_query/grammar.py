@@ -77,7 +77,6 @@ class ODataLexer(Lexer):
         "DECIMAL",
         "INTEGER",
         "BOOLEAN",
-        "ENUM_VALUE",  # New token for enum values
         "ADD",
         "SUB",
         "MUL",
@@ -120,13 +119,6 @@ class ODataLexer(Lexer):
     ####################################################################################
     # Primitive literals
     ####################################################################################
-
-    @_(r"[a-zA-Z_][a-zA-Z0-9_]*'[^']*'")
-    def ENUM_VALUE(self, t):
-        ":meta private:"
-        enum_type, enum_value = t.value.rsplit("'", 1)[0].split("'")
-        t.value = ast.EnumValue(enum_type, enum_value)
-        return t
 
     @_(
         r"duration'[+-]?P(?:\d+Y)?(?:\d+M)?(?:\d+D)?(?:T(?:\d+H)?(?:\d+M)?(?:\d+(?:\.\d+)?S)?)?'"
@@ -401,7 +393,6 @@ class ODataParser(Parser):
         "TIME",
         "DATETIME",
         "DURATION",
-        "ENUM_VALUE",  # Add enum value to primitives
     )
     def primitive_literal(self, p):
         ":meta private:"

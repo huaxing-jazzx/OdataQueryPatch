@@ -95,17 +95,6 @@ class Geography(_Literal):
 
 
 @dataclass(frozen=True)
-class EnumValue(_Literal):
-    """Represents an enum value in OData syntax like EnumType'Value'"""
-    enum_type: str
-    val: str
-
-    @property
-    def py_val(self) -> str:
-        return self.val
-
-
-@dataclass(frozen=True)
 class Date(_Literal):
     val: str
 
