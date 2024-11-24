@@ -106,3 +106,26 @@ class AstToSqlAlchemyOrmVisitor(common._CommonVisitors, visitor.NodeVisitor):
             pass
 
         return elem
+
+    def _get_column_for_identifier(self, name: str):
+        try:
+            return getattr(self.root_model, name)
+        except AttributeError:
+            raise ex.InvalidFieldException(name)
+
+    def visit_Enum(self, node: ast.Enum) -> BindParameter:
+        ":meta private:"
+        column = self._get_column_for_identifier(node.type_name)
+        if not isinstance(column.type, SQLAEnum):
+            raise ex.FilterValueError(
+                f"Column {node.type_name} is not an Enum type"
+            )
+        
+        # Validate that the enum value exists
+        if node.value not in column.type.enums:
+            raise ex.FilterValueError(
+                f"Invalid enum value '{node.value}' for {node.type_name}. "
+                f"Valid values are: {', '.join(column.type.enums)}"
+            )
+        
+        return literal(node.value)

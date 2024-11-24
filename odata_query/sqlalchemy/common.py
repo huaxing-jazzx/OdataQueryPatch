@@ -19,7 +19,7 @@ from sqlalchemy.sql.expression import (
     or_,
     true,
 )
-from sqlalchemy.types import Date, Time, Uuid
+from sqlalchemy.types import Date, Time, Uuid, Enum as SQLAEnum
 
 from odata_query import ast, exceptions as ex, typing, visitor
 
@@ -318,3 +318,7 @@ class _CommonVisitors(visitor.NodeVisitor):
         op = getattr(identifier, func)
 
         return op(substring)
+
+    def visit_Enum(self, node: ast.Enum) -> BindParameter:
+        ":meta private:"
+        return literal(node.py_val)

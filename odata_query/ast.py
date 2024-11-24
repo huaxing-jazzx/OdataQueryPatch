@@ -379,3 +379,13 @@ class CollectionLambda(_Node):
     owner: _Node
     operator: _CollectionOperator
     lambda_: Optional[Lambda]
+
+
+@dataclass(frozen=True)
+class Enum(_Literal):
+    type_name: str
+    value: str
+
+    @property
+    def py_val(self) -> str:
+        return self.value
