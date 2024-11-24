@@ -150,3 +150,9 @@ class InvalidFieldException(ODataException):
     def __init__(self, field_name: str):
         self.field_name = field_name
         super().__init__(f"Invalid field: {field_name}")
+
+
+class FilterValueError(ODataException):
+    """Raised when a filter value is invalid"""
+
+    pass
