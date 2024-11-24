@@ -140,11 +140,15 @@ class ODataLexer(Lexer):
         t.value = ast.GUID(t.value.strip("'"))
         return t
 
-    @_(r"[a-zA-Z][a-zA-Z0-9_]*'[a-zA-Z][a-zA-Z0-9_]*'")
+    @_(r"([a-zA-Z][a-zA-Z0-9_]*)'([a-zA-Z][a-zA-Z0-9_]*)'")
     def ENUM(self, t):
         ":meta private:"
-        typename, enumval = t.value.split("'")[0:3:2]
-        t.value = ast.Enum(typename, enumval)
+        # Use regex groups for more reliable parsing
+        import re
+        match = re.match(r"([a-zA-Z][a-zA-Z0-9_]*)'([a-zA-Z][a-zA-Z0-9_]*)'", t.value)
+        if match:
+            typename, enumval = match.groups()
+            t.value = ast.Enum(typename, enumval)
         return t
 
     @_(r"'(?:[^']|'')*'")
