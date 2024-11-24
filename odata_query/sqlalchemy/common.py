@@ -19,7 +19,7 @@ from sqlalchemy.sql.expression import (
     or_,
     true,
 )
-from sqlalchemy.types import Date, Time, Uuid
+from sqlalchemy.types import Date, Time, Uuid, Enum
 
 from odata_query import ast, exceptions as ex, typing, visitor
 
@@ -53,6 +53,32 @@ class _CommonVisitors(visitor.NodeVisitor):
     def visit_String(self, node: ast.String) -> BindParameter:
         ":meta private:"
         return literal(node.py_val)
+
+    def visit_EnumValue(self, node: ast.EnumValue) -> BindParameter:
+        ":meta private:"
+        # Get the column being compared to this enum value
+        column = self.get_column_for_comparison()
+        if not column:
+            raise ex.InvalidFieldException("No column found for enum comparison")
+        
+        if not isinstance(column.type, Enum):
+            raise ex.EnumComparisonException(column.name)
+
+        # Get the enum class from the column
+        enum_class = column.type.enum_class
+        enum_name = enum_class.__name__
+
+        # Validate enum type matches
+        if node.enum_type != enum_name:
+            raise ex.EnumTypeException(node.enum_type, column.name)
+
+        # Validate the enum value exists
+        try:
+            enum_value = enum_class[node.val]
+            return literal(enum_value)
+        except KeyError:
+            valid_values = [e.name for e in enum_class]
+            raise ex.InvalidEnumValueException(node.val, node.enum_type, valid_values)
 
     def visit_Date(self, node: ast.Date) -> BindParameter:
         ":meta private:"
@@ -190,6 +216,14 @@ class _CommonVisitors(visitor.NodeVisitor):
         except TypeError:
             raise ex.TypeException(node.op.__class__.__name__, val)
 
+    def visit_Compare(self, node: ast.Compare) -> ClauseElement:
+        ":meta private:"
+        left = self.visit(node.left)
+        right = self.visit(node.right)
+        op = self.visit(node.comparator)
+
+        return op(left, right)
+
     def visit_Call(self, node: ast.Call) -> ClauseElement:
         ":meta private:"
         try:
@@ -318,3 +352,7 @@ class _CommonVisitors(visitor.NodeVisitor):
         op = getattr(identifier, func)
 
         return op(substring)
+
+    def get_column_for_comparison(self) -> ClauseElement:
+        """Get the current column being compared in a comparison operation."""
+        return getattr(self, '_current_comparison_column', None)

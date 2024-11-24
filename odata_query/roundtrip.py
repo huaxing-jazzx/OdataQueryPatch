@@ -61,6 +61,10 @@ class AstToODataVisitor(visitor.NodeVisitor):
         """:meta private:"""
         return "'" + node.val + "'"
 
+    def visit_EnumValue(self, node: ast.EnumValue) -> str:
+        """:meta private:"""
+        return f"{node.enum_type}'{node.val}'"
+
     def visit_Duration(self, node: ast.Duration) -> str:
         """:meta private:"""
         return "duration'" + node.val + "'"

@@ -150,3 +150,44 @@ class InvalidFieldException(ODataException):
     def __init__(self, field_name: str):
         self.field_name = field_name
         super().__init__(f"Invalid field: {field_name}")
+
+
+class EnumTypeException(ODataException):
+    """
+    Thrown when an invalid enum type is used in a query.
+    """
+
+    def __init__(self, enum_type: str, field_name: str):
+        self.enum_type = enum_type
+        self.field_name = field_name
+        super().__init__(
+            f"Invalid enum type '{enum_type}' for field '{field_name}'"
+        )
+
+
+class InvalidEnumValueException(ODataException):
+    """
+    Thrown when an invalid enum value is used in a query.
+    """
+
+    def __init__(self, enum_value: str, enum_type: str, valid_values: list):
+        self.enum_value = enum_value
+        self.enum_type = enum_type
+        self.valid_values = valid_values
+        super().__init__(
+            f"Invalid enum value '{enum_value}' for type '{enum_type}'. "
+            f"Valid values are: {', '.join(valid_values)}"
+        )
+
+
+class EnumComparisonException(ODataException):
+    """
+    Thrown when comparing an enum field with a non-enum value.
+    """
+
+    def __init__(self, field_name: str):
+        self.field_name = field_name
+        super().__init__(
+            f"Field '{field_name}' is an enum and must be compared with an enum value "
+            f"using the syntax: EnumType'value'"
+        )

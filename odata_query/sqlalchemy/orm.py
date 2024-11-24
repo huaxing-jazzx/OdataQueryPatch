@@ -5,6 +5,7 @@ from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.orm.decl_api import DeclarativeMeta
 from sqlalchemy.orm.relationships import RelationshipProperty
 from sqlalchemy.sql.expression import BinaryExpression, ClauseElement, ColumnClause
+from sqlalchemy.types import Enum
 
 from odata_query import ast, exceptions as ex, utils, visitor
 
@@ -23,11 +24,16 @@ class AstToSqlAlchemyOrmVisitor(common._CommonVisitors, visitor.NodeVisitor):
     def __init__(self, root_model: Type[DeclarativeMeta]):
         self.root_model = root_model
         self.join_relationships: List[InstrumentedAttribute] = []
+        self._current_comparison_column = None
 
     def visit_Identifier(self, node: ast.Identifier) -> ColumnClause:
         ":meta private:"
         try:
-            return getattr(self.root_model, node.name)
+            column = getattr(self.root_model, node.name)
+            # Store the column if it's an enum type for later validation
+            if isinstance(column.type, Enum):
+                self._current_comparison_column = column
+            return column
         except AttributeError:
             raise ex.InvalidFieldException(node.name)
 
@@ -45,12 +51,19 @@ class AstToSqlAlchemyOrmVisitor(common._CommonVisitors, visitor.NodeVisitor):
         # We'd like to reference the column on the related class:
         owner_cls = prop_inspect.entity.class_
         try:
-            return getattr(owner_cls, node.attr)
+            column = getattr(owner_cls, node.attr)
+            # Store the column if it's an enum type for later validation
+            if isinstance(column.type, Enum):
+                self._current_comparison_column = column
+            return column
         except AttributeError:
             raise ex.InvalidFieldException(node.attr)
 
     def visit_Compare(self, node: ast.Compare) -> BinaryExpression:
         ":meta private:"
+        # Reset the current comparison column
+        self._current_comparison_column = None
+        
         left = self.visit(node.left)
         right = self.visit(node.right)
         op = self.visit(node.comparator)
@@ -61,7 +74,10 @@ class AstToSqlAlchemyOrmVisitor(common._CommonVisitors, visitor.NodeVisitor):
         left = self._maybe_sub_relationship_with_foreign_key(left)
         right = self._maybe_sub_relationship_with_foreign_key(right)
 
-        return op(left, right)
+        # Clear the current comparison column after the comparison is done
+        result = op(left, right)
+        self._current_comparison_column = None
+        return result
 
     def visit_CollectionLambda(self, node: ast.CollectionLambda) -> ClauseElement:
         ":meta private:"
@@ -106,3 +122,7 @@ class AstToSqlAlchemyOrmVisitor(common._CommonVisitors, visitor.NodeVisitor):
             pass
 
         return elem
+
+    def get_column_for_comparison(self) -> ClauseElement:
+        """Get the current column being compared in a comparison operation."""
+        return self._current_comparison_column
