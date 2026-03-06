@@ -139,6 +139,22 @@ def test_ast_to_sql(ast_input: ast._Node, sql_expected: str):
         ("round", [ast.Float("123.12")], "TRUNC(123.12 + 0.5)"),
         ("floor", [ast.Float("123.12")], "FLOOR(123.12)"),
         ("ceiling", [ast.Float("123.12")], "CEILING(123.12)"),
+        # Test GUID support in string functions
+        (
+            "contains",
+            [ast.Identifier("name"), ast.GUID("7a7f024c-d21f-40b1-8296-b664a0de278c")],
+            "\"name\" LIKE '%7a7f024c-d21f-40b1-8296-b664a0de278c%'",
+        ),
+        (
+            "startswith",
+            [ast.Identifier("name"), ast.GUID("7a7f024c-d21f-40b1-8296-b664a0de278c")],
+            "\"name\" LIKE '7a7f024c-d21f-40b1-8296-b664a0de278c%'",
+        ),
+        (
+            "endswith",
+            [ast.Identifier("name"), ast.GUID("7a7f024c-d21f-40b1-8296-b664a0de278c")],
+            "\"name\" LIKE '%7a7f024c-d21f-40b1-8296-b664a0de278c'",
+        ),
     ],
 )
 def test_ast_to_sql_functions(func_name: str, args: List[ast._Node], sql_expected: str):
