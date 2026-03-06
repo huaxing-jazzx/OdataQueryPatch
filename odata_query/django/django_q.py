@@ -467,7 +467,7 @@ class AstToDjangoQVisitor(visitor.NodeVisitor):
     ) -> Expression:
         ":meta private:"
         typing.typecheck(field, (ast.Identifier, ast.String), "field")
-        typing.typecheck(substr, ast.String, "substring")
+        typing.typecheck(substr, (ast.String, ast.GUID), "substring")
 
         return django_func(self.visit(field), self.visit(substr))
 

@@ -311,7 +311,7 @@ class _CommonVisitors(visitor.NodeVisitor):
     ) -> ClauseElement:
         ":meta private:"
         typing.typecheck(field, (ast.Identifier, ast.String), "field")
-        typing.typecheck(substr, ast.String, "substring")
+        typing.typecheck(substr, (ast.String, ast.GUID), "substring")
 
         identifier = self.visit(field)
         substring = self.visit(substr)

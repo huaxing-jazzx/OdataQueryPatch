@@ -256,8 +256,8 @@ class AstToSqlVisitor(visitor.NodeVisitor):
         args_sql = [self.visit(arg) for arg in args]
         inferred_type = [typing.infer_type(arg) for arg in args]
 
-        # If any of the inputs is a string or default, assume str-contains:
-        if any(typ is ast.String for typ in inferred_type) or all(
+        # If any of the inputs is a string, GUID, or default, assume str-contains:
+        if any(typ in (ast.String, ast.GUID) for typ in inferred_type) or all(
             typ is None for typ in inferred_type
         ):
             pattern = self._to_pattern(args[1], prefix="%", suffix="%")
@@ -274,8 +274,8 @@ class AstToSqlVisitor(visitor.NodeVisitor):
         args_sql = [self.visit(arg) for arg in args]
         inferred_type = [typing.infer_type(arg) for arg in args]
 
-        # If any of the inputs is a string or default, assume str-endswith:
-        if any(typ is ast.String for typ in inferred_type) or all(
+        # If any of the inputs is a string, GUID, or default, assume str-endswith:
+        if any(typ in (ast.String, ast.GUID) for typ in inferred_type) or all(
             typ is None for typ in inferred_type
         ):
             pattern = self._to_pattern(args[1], prefix="%")
@@ -326,8 +326,8 @@ class AstToSqlVisitor(visitor.NodeVisitor):
         args_sql = [self.visit(arg) for arg in args]
         inferred_type = [typing.infer_type(arg) for arg in args]
 
-        # If any of the inputs is a string or default, assume str-startswith:
-        if any(typ is ast.String for typ in inferred_type) or all(
+        # If any of the inputs is a string, GUID, or default, assume str-startswith:
+        if any(typ in (ast.String, ast.GUID) for typ in inferred_type) or all(
             typ is None for typ in inferred_type
         ):
             pattern = self._to_pattern(args[1], suffix="%")
